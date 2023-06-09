@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Firebase RealTime Chat</title>
+    <style>
+        body {
+            background-color: #f3f2f3;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            text-align: center;
+        }
+
+        #messages {
+            padding-bottom: 30%;
+        }
+
+        li {
+            list-style-type: none;
+            margin-bottom: 10px;
+            color: white;
+            width: 100%;
+        }
+
+        li .message {
+            padding: 8px;
+            border-radius: 6px;
+            width: 70%;
+        }
+
+        li .message span {
+            font-weight: bolder;
+            display: block;
+            text-align: left;
+        }
+
+        #chat {
+            position: relative;
+            width: 100%;
+            margin: auto;
+            left: -28px;
+        }
+
+        #message-form {
+            text-align: center;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #b7b5b9;
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+
+        .input {
+            width: 70%;
+            height: 30px;
+            border: none;
+            border-radius: 3px;
+            outline: none;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+
+        .btn {
+            width: 25%;
+            height: 32px;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .receive {
+            color: #55e9c9;
+            background-color: #ffffff;
+        }
+
+        .sent {
+            text-align: right;
+            margin-left: 30%;
+            background-color: #ffffff;
+        }
+
+        .sent .name {
+            color: #297cca;
+        }
+
+        .text {
+            color: #000000;
+            font-weight: normal !important;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h2>Firebase RealTime Chat</h2>
+    </header>
+
+    <div id="chat">
+        <!-- messages will display here -->
+        <ul id="messages"></ul>
+
+        <!-- form to send message -->
+        <form id="message-form">
+            <input id="message-input" class="input" type="text" />
+            <button id="message-btn" class="btn" type="button" onclick="sendMessage()">Send</button>
+        </form>
+    </div>
+    <!-- scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "xxxxxxxxxxxxxxxxxxxx",
+            authDomain: "xxxxxxxxxxxxxxxxxx",
+            databaseURL: "xxxxxxxxxxxxxxxxxxxxxxxx",
+            projectId: "xxxxxxxxxxxxxxxxxxxxxxxx",
+            storageBucket: "xxxxxxxxxxxxxxxxxxxxxxxx",
+            messagingSenderId: "xxxxxxxxxxxxxxxxxxxxxxxx",
+            appId: "xxxxxxxxxxxxxxxxxxxxxxxx",
+            measurementId: "xxxxxxxxxxxxxxxxxxxxxxxx"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.database();
+
+        const username = prompt("Please Tell Us Your Name");
+
+        const sendMessage = () => {
+            // get values to be submitted
+            const timestamp = Date.now();
+            const messageInput = document.getElementById("message-input");
+            const message = messageInput.value;
+
+            // clear the input box
+            messageInput.value = "";
+
+            //auto scroll to bottom
+            document
+                .getElementById("messages")
+                .scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+
+            // create db collection and send in the data
+            db.ref("messages/" + timestamp).set({
+                timestamp,
+                username,
+                message,
+            });
+        }
+
+
+        const fetchChat = db.ref("messages/");
+
+        fetchChat.on("child_added", function (snapshot) {
+            const messages = snapshot.val();
+            const message = `<li><div class="message ${username === messages.username ? "sent" : "receive"
+                }"><span class="name">${messages.username}: </span><span class="text">${messages.message}</span></div></li>`;
+            // append the message on the page
+            document.getElementById("messages").innerHTML += message;
+        });
+    </script>
+</body>
+
+</html>
